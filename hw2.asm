@@ -63,28 +63,28 @@ main:
 	#Math section
 	#ans1 = (a + 2) + (b - 5) 
 	lw	$t1, a
-	add	$t1, $t1, 2
+	add	$t1, $t1, 2	# a + 2
 	lw	$t2, b
-	addi	$t2, $t2, -5
-	add	$t3, $t1, $t2
+	addi	$t2, $t2, -5	# b - 5
+	add	$t3, $t1, $t2	
 	sw	$t3, ans1
 	
 	#ans2 = 5 * a - b + 10
 	lw	$t1, a
-	mul	$t1, $t1, 5	#5*a
+	mul	$t1, $t1, 5	# 5 * a
 	mflo	$t1		# Move multiplication answer to register
 	lw	$t2, b
-	sub	$t3, $t1, $t2
-	addi	$t3, $t3, 10
+	sub	$t3, $t1, $t2	# (5*a) - b
+	addi	$t3, $t3, 10	# +10
 	sw	$t3, ans2
 	
 	#ans3 = a + b/2
 	lw	$t1, a
 	lw	$t2, b
 	li	$t3, 2
-	div	$t2, $t3
-	mflo	$s1
-	add	$s2, $t1, $s1
+	div	$t2, $t3	# b/2
+	mflo	$s1		# move quotient to a saved value
+	add	$s2, $t1, $s1	# a + (b/2)
 	sw	$s2, ans3
 	
 	
