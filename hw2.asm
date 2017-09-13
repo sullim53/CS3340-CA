@@ -1,4 +1,4 @@
-.data
+	.data
 a:	.word 	0
 b:	.word	0
 c:	.word	0
@@ -65,7 +65,7 @@ main:
 	lw	$t1, a
 	add	$t1, $t1, 2
 	lw	$t2, b
-	add	$t2, $t2, -5
+	addi	$t2, $t2, -5
 	add	$t3, $t1, $t2
 	sw	$t3, ans1
 	
@@ -78,9 +78,17 @@ main:
 	addi	$t3, $t3, 10
 	sw	$t3, ans2
 	
+	#ans3 = a + b/2
+	lw	$t1, a
+	lw	$t2, b
+	li	$t3, 2
+	div	$t2, $t3
+	mflo	$s1
+	add	$s2, $t1, $s1
+	sw	$s2, ans3
+	
 	
 	#Output name
-	
 	la	$a0, name
 	li	$v0, 4
 	syscall
@@ -107,6 +115,7 @@ main:
 	li	$v0, 1
 	syscall
 	
+	#Terminate the program
 exit:
 	li	$v0, 10
 	syscall
