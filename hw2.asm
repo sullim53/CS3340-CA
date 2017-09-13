@@ -2,10 +2,10 @@
 a:	.word 	0
 b:	.word	0
 c:	.word	0
-int1:	.word	0
-int2:	.word	0
-int3:	.word	0
-name:	.asciiz	""
+ans1:	.word	0
+ans2:	.word	0
+ans3:	.word	0
+name:	.asciiz	"\0"
 p0:	.asciiz "Please enter your name: "
 p1:	.asciiz	"Please enter a digit between 1 and 100: "
 p2:	.asciiz "Your results are: "
@@ -29,43 +29,58 @@ main:
 	la	$a0, p1
 	syscall
 	
-	#Read integer into int1
+	#Read integer into a
 	la	$a0, a
 	li	$v0, 5
 	syscall
 	add	$t0,$zero,$v0	#move answer in a register
-	sw	$t0, int1	#store register into variable
+	sw	$t0, a		#store register into variable
 	
 	#Prompt for integer
 	li	$v0, 4
 	la	$a0, p1
 	syscall
 	
-	#Read integer into int2
+	#Read integer into b
 	la	$a0, b
 	li	$v0, 5
 	syscall
 	add	$t1, $zero, $v0
-	sw	$t1, int2
+	sw	$t1, b
 	
 	#Prompt for integer
 	li	$v0, 4
 	la	$a0, p1
 	syscall
 	
-	#Read integer into int3
+	#Read integer into c
 	la	$a0, c
 	li	$v0, 5
 	syscall
 	add	$t2, $zero, $v0
-	sw	$t2, int3
+	sw	$t2, c
 	
-	#Read Integer
-	lw	$a0, b
-	li	$v0, 1
-	syscall
+	#Math section
+	#ans1 = (a + 2) + (b - 5) 
+	lw	$t1, a
+	add	$t1, $t1, 2
+	lw	$t2, b
+	add	$t2, $t2, -5
+	add	$t3, $t1, $t2
+	sw	$t3, ans1
 	
-	#Read name
+	#ans2 = 5 * a - b + 10
+	lw	$t1, a
+	mul	$t1, $t1, 5	#5*a
+	mflo	$t1		# Move multiplication answer to register
+	lw	$t2, b
+	sub	$t3, $t1, $t2
+	addi	$t3, $t3, 10
+	sw	$t3, ans2
+	
+	
+	#Output name
+	
 	la	$a0, name
 	li	$v0, 4
 	syscall
@@ -75,20 +90,20 @@ main:
 	li	$v0, 4
 	syscall
 	
-	lw	$a0, int1
+	lw	$a0, ans1
 	li	$v0, 1
 	syscall
 	
 	la	$a0, space
 	li	$v0, 4
 	syscall
-	lw	$a0, int2
+	lw	$a0, ans2
 	li	$v0, 1
 	syscall
 	la	$a0, space
 	li	$v0, 4
 	syscall
-	lw	$a0, int3
+	lw	$a0, ans3
 	li	$v0, 1
 	syscall
 	
