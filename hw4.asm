@@ -13,8 +13,8 @@ p3:	.asciiz "Now enter your weight in pounds (round to a whole number): "
 p4:	.asciiz ", your bmi is: "
 p5:	.asciiz "\nThis is considered underweight. "
 p6:	.asciiz "\nThis is normal weight."
-p7:	.asciiz "\nThis is considered overweight"
-p8:	.asciiz "\nThis is considered obese"
+p7:	.asciiz "\nThis is considered overweight."
+p8:	.asciiz "\nThis is considered obese."
 
 	.text
 main:	
