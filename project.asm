@@ -1,124 +1,179 @@
-	.data
-p1:	.asciiz "\nPlease choose from the following: "
-p2:	.asciiz "Menu Options:\n"
-c1:	.asciiz "1) Combinations\n"
-comb1:	.asciiz "Please enter a n value: "
-comb2:	.asciiz "Please enter a k value: "
-comb3:	.asciiz "\nThe combination answer is: "
-n:	.word 0
-k:	.word 0
-choice:	.word 0
-combans:.word 0
+                .data
+prompt_eq:	.asciiz "Select an equation by entering the number below:\n"
+#p2:       .asciiz "Menu Options:\n"
+choice_1:	.asciiz    "1) Combinations without replacement\n"
+choice_2:	.asciiz "2) Combinations with replacement\n"
+choice_3:	.asciiz "3) Permutations without replacement\n"
+choice_4:	.asciiz "4) Combinations with replacement\n"
+choice_error:	.asciiz "You did not enter any of the given choices! Try again.\n\n"
+choice_exit:	.asciiz "0) Exit\n"
+choice_prompt:	.asciiz "\nEnter your choice: "
 
-	.text
+prompt_n:	.asciiz "Please enter a n value: "
+prompt_k:	.asciiz "Please enter a k value: "
+comb3:		.asciiz "\nThe combination answer is: "
+
+input_n:	.word    0
+input_k:	.word    0
+choice:		.word    0
+combans:	.word    0
+
+                .text
 	
-	la	$a0, p2
+menu:	la	$a0, prompt_eq
 	li	$v0, 4
 	syscall
 	
-	la	$a0, c1
+	la	$a0, choice_1
 	li	$v0, 4
 	syscall
 	
-	la	$a0, p1
+	la	$a0, choice_2
+	li	$v0, 4
+	syscall
+	
+	la	$a0, choice_3
+	li	$v0, 4
+	syscall
+	
+	la	$a0, choice_4
+	li	$v0, 4
+	syscall
+	
+	la	$a0, choice_exit
+	li	$v0, 4
+	syscall
+	
+	#Prompt for input
+	la	$a0, choice_prompt
 	li	$v0, 4
 	syscall
 	
 	li	$v0, 5
 	syscall
 	
-	add	$t3, $t3, $v0
-	beq	$t3, 1, combinations
+	add	$t3, $zero, $v0
 	
-combinations:
-	# n!/(k!(n-k)!)
-	# Need n!, k!, and (n-k)!
-	# $s1 = n! 
-	# #s2 = k!
-	# $s3 = (n-k)!
-	# $s4 = k! * (n-k)!
-	lw	$t1, n
-	lw	$t2, k
+	#First check if the user is trying to exit
+	beq	$t3, 0, exit
 	
-	la	$a0, comb1
+	#Prompt for n
+	la	$a0, prompt_n
+	li	$v0, 4
+	syscall
+	
+	li	$v0, 5
+	syscall	#If the user doesn't enter an integer, the error will occur here!
+	sw	$v0, input_n
+	
+	#Prompt for k
+	la	$a0, prompt_k
 	li	$v0, 4
 	syscall
 	
 	li	$v0, 5
 	syscall
+	sw	$v0, input_k
+
+	beq	$t3, 1, combination_wo_replacement_loop_numerator
+	beq	$t3, 2, combination_w_replacement_loop
+	beq	$t3, 3, permutation_wo_replacement_loop
+	beq	$t3, 4, permutation_w_replacement_loop
 	
-	add	$t1, $zero, $v0
-	
-	la	$a0, comb2
+	#If the user didn't choose anything listed.
+	la	$a0, choice_error
 	li	$v0, 4
 	syscall
-	
-	li	$v0, 5
-	syscall
-	add	$t2, $t2, $v0
-	
-	# Compute n-k
-	sub	$s3, $t1, $t2
-	
-	# Run factorial for n
-	jal	factorial
-	add	$s1, $s0, $zero
-	
-	# Run factorial for k
-	add	$t1, $t2, $zero
-	jal	factorial
-	add	$s2, $s0, $zero
-	
-	# Run factorial for (n-k)!
-	add	$t1, $s3, $zero
-	jal	factorial
-	add	$s3, $s0, $zero
-	
-	# Compute n! * (n-k)!
-	mult	$s2, $s3
-	mflo	$s4
-	
-	# Compute n! / (n! * (n-k)!)
-	div	$s1, $s4
-	mflo	$s0
-	
-	#Let's save our answer
-	sw	$s0, combans
-	
-	#Display answer
-	la	$a0, comb3
-	li	$v0, 4
-	syscall
-	
-	lw	$a0, combans
-	li	$v0, 1
-	syscall
-	
-	j	end
-	
-factorial:
-	addi	$sp, $sp, -4
-	sw	$ra, 0($sp)
-	li	$s0, 1
-	
-	# t1 = n
-	# t3 = 1, loop ends
-	# t4 = n - 1
-	# t5 = mult holder
-	# s0 = result holder
-fstart:
-	beq	$t1, $t3, fend	# is n == 1?
-	mult	$s0, $t1
-	mflo	$s0
-	subi	$t1, $t1, 1
-	j	fstart
-	
-	
-fend:
-	lw	$ra, ($sp)
-	addi	$sp, $sp, 4
-	jr	$ra
-	
-end:	
+	j	menu
+                
+                #####if n = k output 1
+                
+                # load the values of n &k, we only have to do this once no matter what the equation is. will cut back on lines. 
+                lw	$t1, input_n                                
+                lw	$t2, input_k
+
+permutation_w_replacement_loop:
+                # Calculate the combination
+                # Equation: (k + n - 1)!/(k!(n-1)!)
+                # (k + n - 1)!/(k!(n-1)!) = {(k+n-1)*(k+n-2)*(k+n-3)*...*n}/k! since n >= k 
+                # look for t so that  k - t = n
+                # take (k + n - 1) reducing by 1 each time until (k + n - 1 - x) = (n - 1)
+                # then divide everything by k!
+                
+                # let t4 = k + n - 1
+                #let $t5 = n - 1
+                beq	$t4, $t5, permutation_w_replacement_loop
+                multu	$s0, $t4
+                mflo	$s0
+                subiu	$t4, $t4, 1
+                j	permutation_w_replacement_loop
+
+combination_w_replacement_loop: #need to find cap in 32 unsigned for n & k
+                # Calculate the permutataion
+                # Equation: n^k
+                beq	$t2, 0, output_result
+                multu	$t1, $t1
+                subiu	$t2, $t2, 1
+                j	combination_w_replacement_loop
+
+permutation_wo_replacement_loop:     
+                # Calculation the permutation loop
+                # Equation: n!/(n-k)!
+                # n!/(n-k)! = n*(n-1)*(n-2)*...*(k+1) since n >= k 
+                
+                beq	$t1, $t2, output_result    # if n = k then exit loop
+                multu	$s0, $t1
+                #multu $s1,        $t1          #since we are checking the t value prior to the calculation we can safely guarentee that the hi register doesnt overflow
+                mflo	$s0                         
+                #mfhi    $s1                         
+                subiu	$t1, $t1, 1
+                j	permutation_wo_replacement_loop
+
+combination_wo_replacement_loop_numerator:             
+                # Calculation the numerator of the combination loop
+                # Equation: n!/(n-k)!
+                # n!/(n-k)! = n*(n-1)*(n-2)*...*(k+1) since n >= k 
+                
+                beq	$t1, $t2, combination_wo_replacement_loop_divide        # if n = k then exit loop
+                multu	$s0, $t1
+                #multu $s1,        $t1          #since we are checking the t value prior to the calculation we can safely guarentee that the hi register doesnt overflow
+                mflo	$s0                         
+                #mfhi    $s1                         
+                subi	$t1, $t1, 1
+                j	combination_wo_replacement_loop_numerator
+
+combination_wo_replacement_loop_divide:       
+                # Calculation of the combination loop
+                # Equation: n!/(k!(n-k)!)
+                # repeat permutation loop to get numerator of equation; Then loop through a k factorial divide.
+                
+                beq	$t2, 0, output_result    # if n = k then exit loop
+                divu	$s0, $t2          #refresh on division - floating points?
+                #divu     $s1,        $t2          #since we are checking the t value prior to the calculation we can safely guarentee that the hi register doesnt overflow        
+                subi	$t2, $t2, 1
+                j	combination_wo_replacement_loop_divide
+
+output_result:
+	j	menu
+		
+exit:
 	li	$v0, 10
 	syscall
+	
+# Trap handler in the standard MIPS32 kernel text segment
+	.ktext 0x80000180
+	move $k0,$v0   # Save $v0 value
+	move $k1,$a0   # Save $a0 value
+	la   $a0, msg  # address of string to print
+	li   $v0, 4    # Print String service
+	syscall
+	move $v0,$k0   # Restore $v0
+	move $a0,$k1   # Restore $a0
+ 	#mfc0 $k0,$14   # Coprocessor 0 register $14 has address of trapping instruction
+	#addi $k0,$k0,88 # Add 88 (4*22 instructions) to point to next instruction
+ 	#mtc0 $k0,$14   # Store new address back into $14
+ 	la	$k0, menu
+ 	mtc0	$k0, $14
+ 	eret           # Error return; set PC to value in $14
+	.kdata	
+msg:	.asciiz "\nYou didn't even enter a number! "
