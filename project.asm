@@ -52,6 +52,8 @@ menu:	la	$a0, prompt_eq
 	li	$v0, 5
 	syscall
 	
+
+	
 	add	$t3, $zero, $v0
 	beq	$t3, 1, combination_wo_replacement_loop_numerator
 	beq	$t3, 2, combination_w_replacement_loop
@@ -63,7 +65,6 @@ menu:	la	$a0, prompt_eq
 	la	$a0, choice_error
 	li	$v0, 4
 	syscall
-	
 	j	menu
                 
                 #####if n = k output 1
@@ -139,3 +140,19 @@ output_result:
 exit:
 	li	$v0, 10
 	syscall
+	
+# Trap handler in the standard MIPS32 kernel text segment
+	.ktext 0x80000180
+	move $k0,$v0   # Save $v0 value
+	move $k1,$a0   # Save $a0 value
+	la   $a0, msg  # address of string to print
+	li   $v0, 4    # Print String service
+	syscall
+	move $v0,$k0   # Restore $v0
+	move $a0,$k1   # Restore $a0
+ 	mfc0 $k0,$14   # Coprocessor 0 register $14 has address of trapping instruction
+	addi $k0,$k0,4 # Add 4 to point to next instruction
+ 	mtc0 $k0,$14   # Store new address back into $14
+ 	eret           # Error return; set PC to value in $14
+	.kdata	
+msg:	.asciiz "\nYou didn't even enter a number! "
