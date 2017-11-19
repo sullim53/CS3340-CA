@@ -7,4 +7,4 @@ Homeworks
 
 Projects
 --------
-+ Major project: due date TBA
++ [Major project](project.asm): due date 11/20 by midnight
