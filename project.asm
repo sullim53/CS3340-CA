@@ -5,6 +5,9 @@ choice_1:	.asciiz    "1) Combinations without replacement\n"
 choice_2:	.asciiz "2) Combinations with replacement\n"
 choice_3:	.asciiz "3) Permutations without replacement\n"
 choice_4:	.asciiz "4) Combinations with replacement\n"
+choice_error:	.asciiz "You did not enter any of the given choices! Try again.\n\n"
+choice_exit:	.asciiz "0) Exit\n"
+choice_prompt:	.asciiz "\nEnter your choice: "
 
 prompt_n:	.asciiz "Please enter a n value: "
 propmt_k:	.asciiz "Please enter a k value: "
@@ -16,26 +19,52 @@ choice:		.word    0
 combans:	.word    0
 
                 .text
-                
-                # Ask user which function they want to use
-		la	$a0, prompt_eq
-                li	$v0, 4
-                syscall
-                
-                # Q
-                la	$a0, choice_1
-                li	$v0, 4
-                syscall
-                
-                la	$a0, prompt_n
-                li	$v0, 4
-                syscall
-                
-                li	$v0, 5
-                syscall
-                
-                add	$t3, $t3, $v0
-                beq	$t3, 1, combans
+	
+menu:	la	$a0, prompt_eq
+	li	$v0, 4
+	syscall
+	
+	la	$a0, choice_1
+	li	$v0, 4
+	syscall
+	
+	la	$a0, choice_2
+	li	$v0, 4
+	syscall
+	
+	la	$a0, choice_3
+	li	$v0, 4
+	syscall
+	
+	la	$a0, choice_4
+	li	$v0, 4
+	syscall
+	
+	la	$a0, choice_exit
+	li	$v0, 4
+	syscall
+	
+	#Prompt for input
+	la	$a0, choice_prompt
+	li	$v0, 4
+	syscall
+	
+	li	$v0, 5
+	syscall
+	
+	add	$t3, $zero, $v0
+	beq	$t3, 1, combination_wo_replacement_loop_numerator
+	beq	$t3, 2, combination_w_replacement_loop
+	beq	$t3, 3, permutation_wo_replacement_loop
+	beq	$t3, 4, permutation_w_replacement_loop
+	beq	$t3, 0, exit
+	
+	#If the user didn't choose anything listed.
+	la	$a0, choice_error
+	li	$v0, 4
+	syscall
+	
+	j	menu
                 
                 #####if n = k output 1
                 
@@ -62,7 +91,7 @@ permutation_w_replacement_loop:
 combination_w_replacement_loop: #need to find cap in 32 unsigned for n & k
                 # Calculate the permutataion
                 # Equation: n^k
-                beq	$t2, 0, exit
+                beq	$t2, 0, output_result
                 multu	$t1, $t1
                 subiu	$t2, $t2, 1
                 j	combination_w_replacement_loop
@@ -104,6 +133,9 @@ combination_wo_replacement_loop_divide:
                 subi	$t2, $t2, 1
                 j	combination_wo_replacement_loop_divide
 
+output_result:
+	j	menu
+		
 exit:
 	li	$v0, 10
 	syscall
