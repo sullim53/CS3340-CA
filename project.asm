@@ -10,7 +10,7 @@ choice_exit:	.asciiz "0) Exit\n"
 choice_prompt:	.asciiz "\nEnter your choice: "
 
 prompt_n:	.asciiz "Please enter a n value: "
-propmt_k:	.asciiz "Please enter a k value: "
+prompt_k:	.asciiz "Please enter a k value: "
 comb3:		.asciiz "\nThe combination answer is: "
 
 input_n:	.word    0
@@ -52,14 +52,33 @@ menu:	la	$a0, prompt_eq
 	li	$v0, 5
 	syscall
 	
-
-	
 	add	$t3, $zero, $v0
+	
+	#First check if the user is trying to exit
+	beq	$t3, 0, exit
+	
+	#Prompt for n
+	la	$a0, prompt_n
+	li	$v0, 4
+	syscall
+	
+	li	$v0, 5
+	syscall	#If the user doesn't enter an integer, the error will occur here!
+	sw	$v0, input_n
+	
+	#Prompt for k
+	la	$a0, prompt_k
+	li	$v0, 4
+	syscall
+	
+	li	$v0, 5
+	syscall
+	sw	$v0, input_k
+
 	beq	$t3, 1, combination_wo_replacement_loop_numerator
 	beq	$t3, 2, combination_w_replacement_loop
 	beq	$t3, 3, permutation_wo_replacement_loop
 	beq	$t3, 4, permutation_w_replacement_loop
-	beq	$t3, 0, exit
 	
 	#If the user didn't choose anything listed.
 	la	$a0, choice_error
@@ -150,9 +169,11 @@ exit:
 	syscall
 	move $v0,$k0   # Restore $v0
 	move $a0,$k1   # Restore $a0
- 	mfc0 $k0,$14   # Coprocessor 0 register $14 has address of trapping instruction
-	addi $k0,$k0,4 # Add 4 to point to next instruction
- 	mtc0 $k0,$14   # Store new address back into $14
+ 	#mfc0 $k0,$14   # Coprocessor 0 register $14 has address of trapping instruction
+	#addi $k0,$k0,88 # Add 88 (4*22 instructions) to point to next instruction
+ 	#mtc0 $k0,$14   # Store new address back into $14
+ 	la	$k0, menu
+ 	mtc0	$k0, $14
  	eret           # Error return; set PC to value in $14
 	.kdata	
 msg:	.asciiz "\nYou didn't even enter a number! "
